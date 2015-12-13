@@ -22,21 +22,24 @@ public class GrinCoder {
 		
 		HashMap<Integer, Integer> freqMap = new HashMap<>();
 		
-		int ch; // value for our frequency map
-		int frequency; // key for our frequency map
+		int ch; // key for our frequency map
+		int freq; // value for our frequency map
 		
 		while (numLines > 0) {
+			
 			ch = stream.readBits(32);
-			frequency = stream.readBits(32);
-			if (freqMap.containsKey(frequency)) {
-				freqMap.put(ch, freqMap.get(ch) + 1);
-			} else {
-				freqMap.put(ch, 1);
-			}
+			freq = stream.readBits(32);
+			
+			//System.out.println("ch = " + value);
+			//System.out.println("frq = " + key);
+
+			freqMap.put(ch, freq);
+			
+			//System.out.println((new HuffmanTree(freqMap)));
 			numLines--;
 		}
 		
-		freqMap.put(256, 1);
+		//freqMap.put(256, 1);
 		
 		return freqMap;
 	}
@@ -48,16 +51,6 @@ public class GrinCoder {
 
 		int ch = reader.read();
 
-//		while (ch > -1) {
-//			ch = reader.read();
-//			if (freqMap.containsKey(ch)) {
-//				freqMap.put(ch, freqMap.get(ch) + 1);
-//			} else {
-//				freqMap.put(ch, 1);
-//			}
-//		}
-//		
-		
 		try {
 			while ((ch = reader.read()) > 0) {
 				if (freqMap.containsKey(ch)) {
@@ -68,7 +61,7 @@ public class GrinCoder {
 			}
 		} catch (IOException e) {}
 
-		freqMap.put(256, 1);
+		//freqMap.put(256, 1);
 
 		reader.close();
 
@@ -80,7 +73,7 @@ public class GrinCoder {
 		Map<Integer, Integer> freqMap = GrinCoder.createFrequencyMap(infile);
 
 		BufferedReader reader = new BufferedReader(new FileReader(infile)); 
-		BitOutputStream writer = new BitOutputStream(outfile, false);
+		BitOutputStream writer = new BitOutputStream(outfile);
 
 		// HEADER 
 		writer.writeBits(1846, 32);
@@ -90,8 +83,8 @@ public class GrinCoder {
 
 		// FREQUENCY MAP [character value (32 bits)][#/occurrences (32 bits)]
 		for (Map.Entry<Integer,Integer> entry : freqMap.entrySet()) {
-			writer.writeBits(entry.getValue(), 32);
 			writer.writeBits(entry.getKey(), 32);
+			writer.writeBits(entry.getValue(), 32);
 		}
 
 		// ENCODED FILE
@@ -113,7 +106,7 @@ public class GrinCoder {
 		reader.close();
 		writer.close();
 		
-		System.out.println(huff);
+		//System.out.println(huff);
 
 	}
 	
@@ -132,7 +125,9 @@ public class GrinCoder {
 		
 		// createFrequencyMap(BitInputStream, int) has uses the file to make the frequency map, so we are at the payload now
 		Map<Integer, Integer> freqMap = GrinCoder.createFrequencyMap(reader, numLines); 
+		System.out.println(freqMap);
 		HuffmanTree huff = new HuffmanTree(freqMap);
+		System.out.println(huff);
 		huff.decode(reader, writer);
 		
 		reader.close();

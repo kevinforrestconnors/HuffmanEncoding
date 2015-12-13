@@ -3,22 +3,25 @@ package edu.grinnell.huffman;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 import edu.grinnell.lib.BitInputStream;
 import edu.grinnell.lib.BitOutputStream;
 
 public class HuffmanTree {
 
-	public Node root;
+	private Node root;
+	private Map<Integer, String> HuffTable;
 
 	public HuffmanTree(Map<Integer, Integer> m) {
 
 		PriorityQueue<Node> queue = new PriorityQueue<Node> ();
 
 		for (Map.Entry<Integer,Integer> entry : m.entrySet()) {
-			queue.add(new Node (entry.getKey(),entry.getValue())); 
+			queue.add(new Node (entry.getKey(), entry.getValue())); 
 		}
 
 		while (queue.size() > 1) {
@@ -31,24 +34,30 @@ public class HuffmanTree {
 		}
 
 		root = queue.poll();
+		
+		Node cur = root;
+		
+		// figure out paths
+		cur.setAllChildrenPaths();
+		
+		// turn paths into HuffTable
+		HuffTable = new HashMap<Integer, String>();
+		root.insertPathInMap(HuffTable);
+		
 	}
 
 	// encodes a list of characters into a binary format
 	public void encode(ArrayList<Integer> list, BitOutputStream stream) {
 
 		Node cur = root;
-
+		String huffmanCode = "";
+		
 		for (Integer ch : list) {
-
-			while (cur.isLeafNode()) {
-				if (ch > cur.value) {
-					cur = cur.right;
-					stream.writeBit(1);
-				} else {
-					cur = cur.left;
-					stream.writeBit(0);
-				}
-			}
+			
+			System.out.println("Encoding:" + huffmanCode);
+			
+			huffmanCode = HuffTable.get(ch);
+			stream.writeBits(Integer.parseInt(huffmanCode, 2), huffmanCode.length());
 
 		}
 
@@ -57,31 +66,27 @@ public class HuffmanTree {
 
 	public void decode(BitInputStream in, BufferedWriter out) throws IOException {
 
-		int bit = in.readBit();
+		int bit = 0;
 		Node cur = root;		
 
-		System.out.println("decoding");
+		
 
 		while (bit != -1) {
 
-			System.out.println(bit);
-			
 			bit = in.readBit();
+			System.out.print(bit);
 			
-			System.out.println(bit);
-
-			if (bit > cur.value) {
+			if (bit == 1) {
 				cur = cur.right;
 			} else {
 				cur = cur.left;
 			}
 
 			if (cur.isLeafNode()) {
-				//System.out.println(cur.value);
-				if (cur.value != 256) {
-					System.out.println(cur.value);
-					out.write(cur.value);
-				}
+
+					System.out.println("=" + (char) cur.value);
+					out.write((char) cur.value);
+				
 	
 				cur = root;
 			}

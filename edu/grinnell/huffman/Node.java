@@ -1,24 +1,52 @@
 package edu.grinnell.huffman;
 
+import java.util.Map;
+
 public class Node implements Comparable<Object> {
 
 	public Node left;
 	public Node right;
+	public String path;
 	public int value;
 	public int frequency;
+	
+	private static int numLeadingZeros(String binaryStringRepresentation) {
+		return binaryStringRepresentation.length() - (Integer.parseInt(binaryStringRepresentation));
+	}
 
 	public Node(int f) {
 		value = -1;
 		frequency = f;
+		path = "";
 	}
 
 	public Node(int v, int f) {
 		value = v;
 		frequency = f;
+		path = "";
 	}
 
 	public boolean isLeafNode() {
 		return left == null && right == null;
+	}
+	
+	public boolean setAllChildrenPaths() {
+		if (!isLeafNode()) {
+			left.path = path + "0";
+			right.path = path + "1";
+			return left.setAllChildrenPaths() && right.setAllChildrenPaths();
+		} else {
+			return true;
+		}
+	}
+	
+	public void insertPathInMap(Map<Integer, String> m) {
+		if (!isLeafNode()) {
+			left.insertPathInMap(m);
+			right.insertPathInMap(m);
+		} else {
+			m.put(value, path);
+		}
 	}
 
 	public int compareTo(Object o) {
@@ -32,9 +60,9 @@ public class Node implements Comparable<Object> {
 	public String toString() {
 
 		if (isLeafNode()) {
-			return "<" + value + "," + frequency + ">";
+			return "" + value + " " + frequency + " " + path + "";
 		} else {
-			return "[" + frequency + "]{" + left.toString() + "}{" + right.toString() + "}";
+			return "[" + frequency + "]{" + left.toString() + "|" + right.toString() + "}";
 		}
 
 
