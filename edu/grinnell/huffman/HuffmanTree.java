@@ -34,16 +34,16 @@ public class HuffmanTree {
 		}
 
 		root = queue.poll();
-		
+
 		Node cur = root;
-		
+
 		// figure out paths
 		cur.setAllChildrenPaths();
-		
+
 		// turn paths into HuffTable
 		HuffTable = new HashMap<Integer, String>();
 		root.insertPathInMap(HuffTable);
-		
+
 	}
 
 	// encodes a list of characters into a binary format
@@ -52,17 +52,21 @@ public class HuffmanTree {
 		Node cur = root;
 		String huffmanCode = "";
 		char bit;
-		
+
 		for (Integer ch : list) {
-			
-			System.out.println("Encoding:" + huffmanCode);
-			
+
 			huffmanCode = HuffTable.get(ch);
 			
+			if (ch == 256) {
+				return;
+			}
+
+			//System.out.println(huffmanCode);
+
 			for (int i = 0; i < huffmanCode.length(); i++) {
-				
+
 				bit = huffmanCode.charAt(i);
-				
+
 				if (bit == '0') {
 					stream.writeBit(0);
 				} else if (bit == '1') {
@@ -70,7 +74,7 @@ public class HuffmanTree {
 				} else {
 					throw new IllegalArgumentException();
 				}
-			
+
 			}
 
 		}
@@ -83,13 +87,12 @@ public class HuffmanTree {
 		int bit = 0;
 		Node cur = root;		
 
-		
+
 
 		while (bit != -1) {
 
 			bit = in.readBit();
-			System.out.print(bit);
-			
+
 			if (bit == 1) {
 				cur = cur.right;
 			} else {
@@ -98,10 +101,13 @@ public class HuffmanTree {
 
 			if (cur.isLeafNode()) {
 
-					System.out.println("=" + (char) cur.value);
-					out.write((char) cur.value);
-				
-	
+				if (cur.value == 256) {
+					//out.write(256);
+					return; // EOF
+				} else {
+					out.write(cur.value);
+				}
+
 				cur = root;
 			}
 

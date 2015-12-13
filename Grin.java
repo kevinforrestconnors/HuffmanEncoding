@@ -21,9 +21,14 @@ public class Grin {
 //        }
         
         //System.out.println(digits);
-//		
-		GrinCoder.encode("huffman-example.txt", "huffman-encoded.grin");
-		GrinCoder.decode("huffman-encoded.grin", "huffman-decoded.txt");
+
+		GrinCoder.encode("WarOriginal.txt", "OurEncoded.grin");
+		System.out.println("done");
+		
+		//GrinCoder.decode("PMEncoded.grin", "PMDecoded.txt");
+		GrinCoder.decode("OurEncoded.grin", "OurDecoded.txt");
+		
+		System.out.println("done");
 		
 	}
 }
