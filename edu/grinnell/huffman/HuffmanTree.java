@@ -51,13 +51,27 @@ public class HuffmanTree {
 
 		Node cur = root;
 		String huffmanCode = "";
+		char bit;
 		
 		for (Integer ch : list) {
 			
 			System.out.println("Encoding:" + huffmanCode);
 			
 			huffmanCode = HuffTable.get(ch);
-			stream.writeBits(Integer.parseInt(huffmanCode, 2), huffmanCode.length());
+			
+			for (int i = 0; i < huffmanCode.length(); i++) {
+				
+				bit = huffmanCode.charAt(i);
+				
+				if (bit == '0') {
+					stream.writeBit(0);
+				} else if (bit == '1') {
+					stream.writeBit(1);
+				} else {
+					throw new IllegalArgumentException();
+				}
+			
+			}
 
 		}
 
