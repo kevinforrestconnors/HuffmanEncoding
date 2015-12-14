@@ -1,4 +1,4 @@
-package edu.grinnell.huffman;
+
 
 import java.util.Map;
 
@@ -9,10 +9,6 @@ public class Node implements Comparable<Object> {
 	public String path;
 	public int value;
 	public int frequency;
-	
-	private static int numLeadingZeros(String binaryStringRepresentation) {
-		return binaryStringRepresentation.length() - (Integer.parseInt(binaryStringRepresentation));
-	}
 
 	public Node(int f) {
 		value = -1;
@@ -64,7 +60,6 @@ public class Node implements Comparable<Object> {
 		} else {
 			return "[" + frequency + "]{" + left.toString() + "|" + right.toString() + "}";
 		}
-
 
 	}
 }

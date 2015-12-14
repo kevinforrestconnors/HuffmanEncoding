@@ -1,4 +1,4 @@
-package edu.grinnell.huffman;
+
 
 public class Pair {
 	

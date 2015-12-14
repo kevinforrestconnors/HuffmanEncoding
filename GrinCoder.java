@@ -1,9 +1,7 @@
-package edu.grinnell.grin;
+
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,15 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.grinnell.huffman.HuffmanTree;
-import edu.grinnell.lib.BitInputStream;
-import edu.grinnell.lib.BitOutputStream;
-
 public class GrinCoder {
 
-	// reads 64 * numLines bits from stream
+	/**
+	 * createFrequencyMap(BitInputStream stream, int numLines)
+	 * @preconditions - stream has already been read until the header
+	 * @param stream - a compressed binary file
+	 * @param numLines - the header contains 64 * numlines bits, then the payload begins 
+	 * @return freqMap, a HashMap containing <the first 32 bits, the second 32 bits> from each "line"
+	 * @throws IOException
+	 */
 	private static Map<Integer, Integer> createFrequencyMap(BitInputStream stream, int numLines) throws IOException {
-		// for decode
 
 		HashMap<Integer, Integer> freqMap = new HashMap<>();
 
@@ -30,27 +30,25 @@ public class GrinCoder {
 
 			ch = stream.readBits(32);
 			freq = stream.readBits(32);
-
-			//System.out.println("ch = " + value);
-			//System.out.println("frq = " + key);
-
 			freqMap.put(ch, freq);
-
-			//System.out.println((new HuffmanTree(freqMap)));
 			numLines--;
 		}
 
 		return freqMap;
 	}
 
+	/**
+	 * createFrequencyMap(String file)
+	 * @param file - an uncompressed file
+	 * @return freqMap - a HashMap<Integer, Integer> of <Character, Frequency>
+	 * @throws IOException
+	 */
 	private static Map<Integer, Integer> createFrequencyMap(String file) throws IOException {
-		// for encode
 
 		HashMap<Integer, Integer> freqMap = new HashMap<>();
 		BufferedReader reader = new BufferedReader(new FileReader(file)); 
 
 		int ch = reader.read();
-
 
 		while (ch != -1) {
 
@@ -62,12 +60,22 @@ public class GrinCoder {
 
 			ch = reader.read();
 		}
+		
+		freqMap.put(grin.EOF, 1);
 
 		reader.close();
 
 		return freqMap;
 	}
 
+	/**
+	 * encode(String infile, String outfile)
+	 * Compressses a file using the Huffman Encoding algorithm
+	 * Calls HuffmanTree.encode
+	 * @param infile an uncompressed ASCII file to be compressed
+	 * @param outfile the file to write to in a compressed, binary format
+	 * @throws IOException if infile not found
+	 */
 	public static void encode(String infile, String outfile) throws IOException {
 
 		Map<Integer, Integer> freqMap = GrinCoder.createFrequencyMap(infile);
@@ -87,8 +95,7 @@ public class GrinCoder {
 			writer.writeBits(entry.getValue(), 32);
 		}
 
-		// ENCODED FILE
-
+		// PAYLOAD
 		ArrayList<Integer> chars = new ArrayList<Integer>();
 
 		int ch = reader.read();
@@ -98,27 +105,36 @@ public class GrinCoder {
 			ch = reader.read();
 		}
 
-		chars.add(256);
-
 		HuffmanTree huff = new HuffmanTree(freqMap);
 		huff.encode(chars, writer);
-
+		
 		reader.close();
 		writer.close();
 
-
 	}
 
+	/**
+	 * decode(String infile, String outfile) 
+	 * decodes a .grin file to an ASCII file
+	 * @param infile the file to uncompress
+	 * @param outfile the uncompressed ASCII file to produce
+	 * @throws IOException
+	 */
 	public static void decode(String infile, String outfile) throws IOException {
 
 		BitInputStream reader = new BitInputStream(infile); 
 		BufferedWriter writer = new BufferedWriter(new FileWriter(outfile)); 
 
 		int magicNumber = reader.readBits(32);
+		
+		if (magicNumber != 1846) {
+			reader.close();
+			writer.close();
+			throw new IllegalArgumentException("Usage: not a .grin file");
+		}
 
 		int numLines = reader.readBits(32);
 
-		// createFrequencyMap(BitInputStream, int) has uses the file to make the frequency map, so we are at the payload now
 		Map<Integer, Integer> freqMap = GrinCoder.createFrequencyMap(reader, numLines); 
 		HuffmanTree huff = new HuffmanTree(freqMap);
 		huff.decode(reader, writer);
